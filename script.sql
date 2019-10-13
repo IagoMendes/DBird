@@ -9,7 +9,7 @@ CREATE TABLE users (
   city VARCHAR(20) NOT NULL,
   is_activeu TINYINT NOT NULL DEFAULT 1,
   PRIMARY KEY (id_user)
-);
+);              
 
 CREATE TABLE post (
   id_post INT NOT NULL AUTO_INCREMENT,
@@ -24,18 +24,18 @@ CREATE TABLE post (
 );
 
 CREATE TABLE views (
-  user_id_user INT NOT NULL,
-  post_id_post INT NOT NULL,
+  id_user INT NOT NULL,
+  id_post INT NOT NULL,
   browser VARCHAR(10) NOT NULL,
   IP VARCHAR(15) NOT NULL,
   device VARCHAR(20) NOT NULL,
-  PRIMARY KEY (user_id_user, post_id_post),
+  PRIMARY KEY (id_user, id_post),
   
   CONSTRAINT fk_user_post_user1
-    FOREIGN KEY (user_id_user) REFERENCES users (id_user),
+    FOREIGN KEY (id_user) REFERENCES users (id_user),
     
   CONSTRAINT fk_user_post_post1
-    FOREIGN KEY (post_id_post) REFERENCES post (id_post)
+    FOREIGN KEY (id_post) REFERENCES post (id_post)
 );
 
 CREATE TABLE bird (
@@ -45,10 +45,10 @@ CREATE TABLE bird (
 );
 
 CREATE TABLE user_bird (
-  iduser_bird INT NOT NULL,
   id_user INT NOT NULL,
   id_bird INT NOT NULL,
-  PRIMARY KEY (iduser_bird),
+  is_activeub TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (id_user, id_bird),
   
   CONSTRAINT fk_user_bird_user1
     FOREIGN KEY (id_user) REFERENCES users (id_user),
@@ -58,27 +58,27 @@ CREATE TABLE user_bird (
 );
 
 CREATE TABLE bird_mention (
-  id_mentionbird INT NOT NULL AUTO_INCREMENT,
-  post_id_post INT NOT NULL,
-  bird_id_bird INT NOT NULL,
-  PRIMARY KEY (id_mentionbird),
+  id_post INT NOT NULL,
+  id_bird INT NOT NULL,
+  is_activebm TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (id_post, id_bird),
   
   CONSTRAINT fk_bird_mention_post1
-    FOREIGN KEY (post_id_post) REFERENCES post (id_post),
+    FOREIGN KEY (id_post) REFERENCES post (id_post),
     
   CONSTRAINT fk_bird_mention_bird1
-    FOREIGN KEY (bird_id_bird) REFERENCES bird (id_bird)
+    FOREIGN KEY (id_bird) REFERENCES bird (id_bird)
   );
 
 CREATE TABLE user_mention (
-  id_mentionuser INT NOT NULL AUTO_INCREMENT,
-  post_id_post INT NOT NULL,
-  user_id_user INT NOT NULL,
-  PRIMARY KEY (id_mentionuser),
+  id_post INT NOT NULL,
+  id_user INT NOT NULL,
+  is_activeum TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (id_post, id_user),
   
   CONSTRAINT fk_user_mention_post1
-    FOREIGN KEY (post_id_post) REFERENCES post (id_post),
+    FOREIGN KEY (id_post) REFERENCES post (id_post),
     
   CONSTRAINT fk_user_mention_user1
-    FOREIGN KEY (user_id_user) REFERENCES users (id_user)
+    FOREIGN KEY (id_user) REFERENCES users (id_user)
 );
