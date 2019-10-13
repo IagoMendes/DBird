@@ -35,6 +35,7 @@ class TestProjeto(unittest.TestCase):
         with conn.cursor() as cursor:
             cursor.execute('ROLLBACK')
 
+############################################################### TESTING USER
     def test_user_create(self):
         conn = self.__class__.connection
     
@@ -73,18 +74,111 @@ class TestProjeto(unittest.TestCase):
 
         id = find_user(conn, 'eu')
 
-        # Tenta mudar nome para algum nome já existente.
+        new_email = "new@email.com"
+        new_city = "sao paulo"
+        new_name = "NewName"
+        # Tries to update user info
         try:
-            update_user_city(conn, id, "sao paulo")
-            update_user_email(conn, id, "new@email.com")
-            update_user_name(conn, id, "NewName")
-        except ValueError as e:
+            update_user_city(conn, id, new_city)
+            update_user_email(conn, id, new_email)
+            update_user_name(conn, id, new_name)
+        except ValueError:
             self.fail('Error updating user')
             pass
 
-        # Verifica se mudou.
-        id_novo = find_user(conn, 'NewName')
-        self.assertEqual(id, id_novo)
+        # Confirms updates
+        new_id = find_user(conn, 'NewName')
+        self.assertEqual(id, new_id)
+
+        data = describe_user(conn, id)
+        self.assertEqual(new_name, data[0])
+        self.assertEqual(new_email, data[1])
+        self.assertEqual(new_city, data[2])
+
+############################################################### TESTING BIRD
+    def test_bird_create(self):
+        conn = self.__class__.connection
+    
+        bird_name = 'Cacatua'
+
+        bird_create(conn, bird_name)
+
+        # Checks if bird was created
+        id = find_bird(conn, bird_name)
+        self.assertIsNotNone(id)
+
+        # Searches for inexistent bird
+        id = find_bird(conn, 'Rolinha')
+        self.assertIsNone(id)
+
+    def test_update_bird(self):
+        conn = self.__class__.connection
+
+        bird_create(conn, 'Cacatua')
+
+        id = find_bird(conn, 'Cacatua')
+
+        new_name = "Pomba"
+        
+        # Tries to update user info
+        try:
+            update_bird(conn, id, new_name)
+        except ValueError:
+            self.fail('Error updating bird')
+            pass
+
+        # Confirms updates
+        new_id = find_bird(conn, 'Pomba')
+        self.assertEqual(id, new_id)
+
+    def test_bird_delete(self):
+        conn = self.__class__.connection
+
+        bird_name = 'Cacatua'
+
+        bird_create(conn, bird_name)
+
+        # Checks if bird was created
+        id = find_bird(conn, bird_name)
+        self.assertIsNotNone(id)
+
+        # Deletes bird
+        delete_bird(conn, id)
+
+        # Checks if bird was deleted
+        id = find_bird(conn, bird_name)
+        self.assertIsNone(id)
+
+############################################################### TESTING POST
+
+
+############################################################### TESTING VIEW
+
+
+############################################################### TESTING LIKE
+    def test_like(self):
+        conn = self.__class__.connection
+    
+        bird_name = 'Cacatua'
+        bird_create(conn, bird_name)
+
+        user_create(conn, 'Jorg', 'email@jorg', 'landiafin')
+
+        id_bird = find_bird(conn, bird_name)
+        id_user = find_user(conn, 'Jorg')
+
+        user_likes_bird(conn, id_user, id_bird)
+
+        active = find_like(conn, id_user, id_bird)
+        self.assertEqual(active, 1)
+
+        user_dislikes_bird(conn, id_user, id_bird)
+        active = find_like(conn, id_user, id_bird)
+        self.assertEqual(active, 0)
+
+############################################################### TESTING MENTION
+
+
 
 def run_sql_script(filename):
     global config

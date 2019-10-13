@@ -20,10 +20,17 @@ def find_user(conn, user_name):  #retrieve user's id using it's user name
 
 def user_list(conn):  #list all users 
     with conn.cursor() as cursor:
-        cursor.execute('SELECT id_user, user_name, email, city FROM users WHERE is_activeu = 1')
+        cursor.execute('SELECT id_user FROM users WHERE is_activeu = 1')
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users
+
+def describe_user(conn, id_user):  #user info
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT user_name, email, city FROM users WHERE is_activeu = 1 AND id_user = %s', (id_user))
+        res = cursor.fetchall()
+        user = tuple(x for x in res)
+        return user[0]
 
 def update_user_name(conn, id, new_user_name):  #update user info 
     with conn.cursor() as cursor:
@@ -70,7 +77,7 @@ def bird_create(conn, bird_name):  #insert new bird
 
 def find_bird(conn, bird_name):  #find bird id using it's name
     with conn.cursor() as cursor:
-        cursor.execute('SELECT id_bird FROM bird WHERE bird_name = %s AND is_activeb = 1', (bird_name))
+        cursor.execute('SELECT id_bird FROM bird WHERE bird_name = %s', (bird_name))
         res = cursor.fetchone()
         if res:
             return res[0]
@@ -86,7 +93,7 @@ def update_bird(conn, id, new_bird_name):  #update bird name (only when mistakes
 
 def delete_bird(conn, id):  #logical delete for birds (which may be unnecessary)
     with conn.cursor() as cursor:
-        cursor.execute('UPDATE bird SET is_activeb=0 WHERE id_bird=%s', (id))
+        cursor.execute('DELETE FROM bird WHERE id_bird=%s', (id))
 
 ##################################################### LIKES
 def user_likes_bird(conn, id_user, id_bird):  #insert new bird
@@ -95,6 +102,15 @@ def user_likes_bird(conn, id_user, id_bird):  #insert new bird
             cursor.execute('INSERT INTO user_bird (id_user, id_bird) VALUES (%s,%s)', (id_user, id_bird))
         except pymysql.err.IntegrityError as e:
             raise ValueError(f'User {id_user} is unable to like bird {id_bird}')
+
+def find_like(conn, id_user, id_bird):  #find bird id using it's name
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT is_activeub FROM user_bird WHERE id_bird = %s AND id_user = %s', (id_bird, id_user))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None       
 
 def user_dislikes_bird(conn, id_user, id_bird):
     with conn.cursor() as cursor:
@@ -165,19 +181,19 @@ def user_post_list(conn, id_user):  #list all posts a specific user wrote
     with conn.cursor() as cursor:
         cursor.execute('SELECT title, content, url FROM post WHERE id_user = %s AND is_activep = 1', (id_user))
         res = cursor.fetchall()
-        posts = tuple(x[0] for x in res)
-        return posts
+        posts = tuple(x for x in res)
+        return posts[0]
 
 def delete_post(conn, id):  #logical delete for post
     with conn.cursor() as cursor:
         cursor.execute('UPDATE post SET is_activep=0 WHERE id_post=%s', (id))
 
 ##################################################### VIEWS
-def view_create(conn, user, post, browser, ip, device):  #User viewed post
+def view_create(conn, user, post, browser, ip, device, view_date):  #User viewed post
     with conn.cursor() as cursor:
         try:
-            cursor.execute('''INSERT INTO views (id_user, id_post, browser, ip, device) 
-                              VALUES (%s,%s,%s,%s,%s)''', (user, post, browser, ip, device))
+            cursor.execute('''INSERT INTO views (id_user, id_post, browser, ip, device, view_date) 
+                              VALUES (%s,%s,%s,%s,%s,%s)''', (user, post, browser, ip, device, view_date))
         except pymysql.err.IntegrityError as e:
             raise ValueError(f'Unable to create view from user {user}')
 
@@ -190,14 +206,17 @@ def find_view_user(conn, id_user):
 
 def find_info_view(conn, id_user, id_post):  
     with conn.cursor() as cursor:
-        cursor.execute('SELECT browser, ip, device FROM views WHERE id_user = %s AND id_post = %s', (id_user, id_post))
+        cursor.execute('SELECT browser, ip, device, view_date FROM views WHERE id_user = %s AND id_post = %s', (id_user, id_post))
         res = cursor.fetchall()
-        infos = tuple(x[0] for x in res)
-        return infos
+        infos = tuple(x for x in res)
+        return infos[0]
 
 def find_users_viewed_post(conn, id_post):
     with conn.cursor() as cursor:
-        cursor.execute('SELECT user_name FROM users INNER JOIN views USING (id_user) WHERE views.id_post = %s AND user.is_activeu = 1', (id_post))
+        cursor.execute('''SELECT user_name 
+                          FROM users 
+                          INNER JOIN views USING (id_user) 
+                          WHERE views.id_post = %s AND user.is_activeu = 1''', (id_post))
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users
