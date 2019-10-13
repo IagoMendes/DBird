@@ -20,7 +20,7 @@ def find_user(conn, user_name):  #retrieve user's id using it's user name
 
 def user_list(conn):  #list all users 
     with conn.cursor() as cursor:
-        cursor.execute('SELECT id_user, user_name, email, city FROM users')
+        cursor.execute('SELECT id_user, user_name, email, city FROM users WHERE is_activeu = 1')
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users
@@ -70,7 +70,7 @@ def bird_create(conn, bird_name):  #insert new bird
 
 def find_bird(conn, bird_name):  #find bird id using it's name
     with conn.cursor() as cursor:
-        cursor.execute('SELECT id_bird FROM bird WHERE bird_name = %s', (bird_name))
+        cursor.execute('SELECT id_bird FROM bird WHERE bird_name = %s AND is_activeb = 1', (bird_name))
         res = cursor.fetchone()
         if res:
             return res[0]
@@ -154,7 +154,7 @@ def post_mention_bird(conn, id_post, id_mentioned_bird):  #post mentions bird
 
 def find_post_title(conn, title):  #find one post using it's title
     with conn.cursor() as cursor:
-        cursor.execute('SELECT content, url, id_user FROM post WHERE title = %s', (title))
+        cursor.execute('SELECT content, url, id_user FROM post WHERE title = %s AND is_activep = 1', (title))
         res = cursor.fetchone()
         if res:
             return res[0]
@@ -163,7 +163,7 @@ def find_post_title(conn, title):  #find one post using it's title
 
 def user_post_list(conn, id_user):  #list all posts a specific user wrote
     with conn.cursor() as cursor:
-        cursor.execute('SELECT title, content, url FROM post WHERE id_user = %s', (id_user))
+        cursor.execute('SELECT title, content, url FROM post WHERE id_user = %s AND is_activep = 1', (id_user))
         res = cursor.fetchall()
         posts = tuple(x[0] for x in res)
         return posts
@@ -197,7 +197,7 @@ def find_info_view(conn, id_user, id_post):
 
 def find_users_viewed_post(conn, id_post):
     with conn.cursor() as cursor:
-        cursor.execute('SELECT id_user FROM views WHERE id_post = %s', (id_post))
+        cursor.execute('SELECT user_name FROM users INNER JOIN views USING (id_user) WHERE views.id_post = %s AND user.is_activeu = 1', (id_post))
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users
