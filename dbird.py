@@ -25,7 +25,7 @@ def user_list(conn):  #list all users
         users = tuple(x[0] for x in res)
         return users
 
-def update_user_name(conn, id, new_user_name):  #update user info
+def update_user_name(conn, id, new_user_name):  #update user info 
     with conn.cursor() as cursor:
         try:
             cursor.execute('UPDATE users SET user_name=%s WHERE id_user=%s', (new_user_name, id))
