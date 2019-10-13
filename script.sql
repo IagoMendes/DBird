@@ -8,7 +8,7 @@ CREATE TABLE users (
   email VARCHAR(45) NOT NULL,
   city VARCHAR(20) NOT NULL,
   is_activeu TINYINT NOT NULL DEFAULT 1,
-  PRIMARY KEY (id_user)
+  PRIMARY KEY (id_user, user_name)
 );              
 
 CREATE TABLE post (
@@ -29,6 +29,7 @@ CREATE TABLE views (
   browser VARCHAR(10) NOT NULL,
   IP VARCHAR(15) NOT NULL,
   device VARCHAR(20) NOT NULL,
+  view_date TIMESTAMP NOT NULL,
   PRIMARY KEY (id_user, id_post),
   
   CONSTRAINT fk_user_post_user1
