@@ -18,7 +18,7 @@ CREATE TABLE post (
   url VARCHAR(45) NULL,
   id_user INT NOT NULL,
   is_activep TINYINT NOT NULL DEFAULT 1,
-  PRIMARY KEY (id_post),
+  PRIMARY KEY (id_post, id_user),
   CONSTRAINT fk_post_user
     FOREIGN KEY (id_user) REFERENCES users (id_user)
 );
