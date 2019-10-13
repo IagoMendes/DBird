@@ -71,7 +71,6 @@ class TestProjeto(unittest.TestCase):
         conn = self.__class__.connection
 
         user_create(conn, 'eu', 'eu@eu.email', 'la')
-
         id = find_user(conn, 'eu')
 
         new_email = "new@email.com"
@@ -150,6 +149,33 @@ class TestProjeto(unittest.TestCase):
         self.assertIsNone(id)
 
 ############################################################### TESTING POST
+    def test_post(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'eu', 'eu@eu.email', 'la')
+        id_write = find_user(conn, 'eu')
+
+        post_create(conn, id_write, 'New Post', 'Look at that pretty bird')
+        data = user_post_list(conn, id_write)
+        self.assertEqual('New Post', data[0])
+        self.assertEqual('Look at that pretty bird', data[1])
+        self.assertEqual(None, data[2])
+
+    def test_mention_user(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'eu', 'eu@eu.email', 'la')
+        id_write = find_user(conn, 'eu')
+
+        user_create(conn, 'jorg', 'jorg@email', 'here')
+        id_ment = find_user(conn, 'jorg')
+
+        post_create(conn, id_write, 'New Post', 'Look at that pretty bird')
+        post = find_post(conn, id_write, 'New Post')
+
+        post_mention_user(conn, post, id_ment)
+        id_mention = find_mentioned_posts_user(conn, id_ment)
+        self.assertIsNotNone(id_mention)
 
 
 ############################################################### TESTING VIEW

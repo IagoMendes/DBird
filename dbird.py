@@ -126,7 +126,6 @@ def find_mention(subs, s):
             check_end = 0
     mentions = []
     splt = s.split(" ")
-    print(s)
     for i in splt:
         if i[0] == subs:
             mentions.append(i[1:])
@@ -141,15 +140,15 @@ def post_create(conn, id_user, title, content=None, url=None):  #create new post
             if len(user_search) > 0:
                 for i in user_search:
                     id_mention = find_user(conn, i)
-                    id_post = find_post_title(conn, title)
+                    id_post = find_post(conn, id_user, title)
                     post_mention_user(conn, id_post, id_mention)
-
-            bird_search = find_mention('@', content) 
-            if len(bird_search) > 0:
-                for i in bird_search:
-                    id_mention = find_bird(conn, i)
-                    id_post = find_post_title(conn, title)
-                    post_mention_bird(conn, id_post, id_mention)
+        
+            #bird_search = find_mention('@', content) 
+            #if len(bird_search) > 0:
+            #    for i in bird_search:
+           #        id_mention = find_bird(conn, i)
+           #         id_post = find_post(conn, id_user, title)
+           #         post_mention_bird(conn, id_post, id_mention)
 
         except pymysql.err.IntegrityError as e:
             raise ValueError(f'Unable to create post')
@@ -168,14 +167,29 @@ def post_mention_bird(conn, id_post, id_mentioned_bird):  #post mentions bird
         except pymysql.err.IntegrityError as e:
             raise ValueError(f'Mentioning bird failed')
 
-def find_post_title(conn, title):  #find one post using it's title
+def find_mentioned_posts_user(conn, id_user):
     with conn.cursor() as cursor:
-        cursor.execute('SELECT content, url, id_user FROM post WHERE title = %s AND is_activep = 1', (title))
-        res = cursor.fetchone()
-        if res:
-            return res[0]
+        cursor.execute('SELECT id_post FROM user_mention INNER JOIN post USING (id_post) WHERE user_mention.id_user = %s AND is_activep = 1', (id_user))
+        res = cursor.fetchall()
+        posts = tuple(x for x in res)
+        if len(posts) > 0:
+            return posts[0] 
         else:
-            return None
+            return posts
+
+def find_mentioned_posts_bird(conn, id_bird):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT id_post FROM bird_mention INNER JOIN post USING (id_post) WHERE id_bird = %s AND is_activep = 1', (id_bird))
+        res = cursor.fetchall()
+        posts = tuple(x for x in res)
+        return posts[0]
+
+def find_post(conn, id_user, title): 
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT id_post FROM post WHERE id_user = %s AND title = %s AND is_activep = 1', (id_user, title))
+        res = cursor.fetchone()
+        posts = tuple(x for x in res)
+        return posts[0]
 
 def user_post_list(conn, id_user):  #list all posts a specific user wrote
     with conn.cursor() as cursor:
