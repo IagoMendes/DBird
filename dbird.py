@@ -143,12 +143,12 @@ def post_create(conn, id_user, title, content=None, url=None):  #create new post
                     id_post = find_post(conn, id_user, title)
                     post_mention_user(conn, id_post, id_mention)
         
-            #bird_search = find_mention('@', content) 
-            #if len(bird_search) > 0:
-            #    for i in bird_search:
-           #        id_mention = find_bird(conn, i)
-           #         id_post = find_post(conn, id_user, title)
-           #         post_mention_bird(conn, id_post, id_mention)
+            bird_search = find_mention('@', content) 
+            if len(bird_search) > 0:
+                for i in bird_search:
+                    id_mention = find_bird(conn, i)
+                    id_post = find_post(conn, id_user, title)
+                    post_mention_bird(conn, id_post, id_mention)
 
         except pymysql.err.IntegrityError as e:
             raise ValueError(f'Unable to create post')
@@ -182,14 +182,20 @@ def find_mentioned_posts_bird(conn, id_bird):
         cursor.execute('SELECT id_post FROM bird_mention INNER JOIN post USING (id_post) WHERE id_bird = %s AND is_activep = 1', (id_bird))
         res = cursor.fetchall()
         posts = tuple(x for x in res)
-        return posts[0]
+        if len(posts) > 0:
+            return posts[0] 
+        else:
+            return posts
 
 def find_post(conn, id_user, title): 
     with conn.cursor() as cursor:
         cursor.execute('SELECT id_post FROM post WHERE id_user = %s AND title = %s AND is_activep = 1', (id_user, title))
         res = cursor.fetchone()
-        posts = tuple(x for x in res)
-        return posts[0]
+        if res:
+            posts = tuple(x for x in res)
+            return posts[0]
+        else:
+            return None
 
 def user_post_list(conn, id_user):  #list all posts a specific user wrote
     with conn.cursor() as cursor:

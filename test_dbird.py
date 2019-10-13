@@ -156,10 +156,15 @@ class TestProjeto(unittest.TestCase):
         id_write = find_user(conn, 'eu')
 
         post_create(conn, id_write, 'New Post', 'Look at that pretty bird')
+        post = find_post(conn, id_write, 'New Post')
         data = user_post_list(conn, id_write)
         self.assertEqual('New Post', data[0])
         self.assertEqual('Look at that pretty bird', data[1])
         self.assertEqual(None, data[2])
+
+        delete_post(conn, post)
+        post = find_post(conn, id_write, 'New Post')
+        self.assertIsNone(post)
 
     def test_mention_user(self):
         conn = self.__class__.connection
@@ -174,8 +179,26 @@ class TestProjeto(unittest.TestCase):
         post = find_post(conn, id_write, 'New Post')
 
         post_mention_user(conn, post, id_ment)
-        id_mention = find_mentioned_posts_user(conn, id_ment)
-        self.assertIsNotNone(id_mention)
+
+        res = find_mentioned_posts_user(conn, id_ment)
+        self.assertCountEqual(res, (post,))
+
+    def test_mention_bird(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'eu', 'eu@eu.email', 'la')
+        id_write = find_user(conn, 'eu')
+
+        bird_create(conn, 'Cacatua')
+        id_ment = find_bird(conn, 'Cacatua')
+
+        post_create(conn, id_write, 'New Post', 'Look at that pretty bird')
+        post = find_post(conn, id_write, 'New Post')
+
+        post_mention_bird(conn, post, id_ment)
+        
+        res = find_mentioned_posts_bird(conn, id_ment)
+        self.assertCountEqual(res, (post,))
 
 
 ############################################################### TESTING VIEW
