@@ -129,7 +129,10 @@ def find_mention(subs, s):
     for i in splt:
         if i[0] == subs:
             mentions.append(i[1:])
-    return mentions
+    if len(mentions) > 0:
+        return mentions
+    else:
+        return None
 
 def post_create(conn, id_user, title, content=None, url=None):  #create new post
     with conn.cursor() as cursor:
@@ -137,18 +140,20 @@ def post_create(conn, id_user, title, content=None, url=None):  #create new post
             cursor.execute('INSERT INTO post (title, content, url, id_user) VALUES (%s,%s,%s,%s)', (title, content, url, id_user))
 
             user_search = find_mention('#', content) 
-            if len(user_search) > 0:
+            if user_search != None:
                 for i in user_search:
                     id_mention = find_user(conn, i)
                     id_post = find_post(conn, id_user, title)
-                    post_mention_user(conn, id_post, id_mention)
+                    if id_mention != None:
+                        post_mention_user(conn, id_post, id_mention)
         
             bird_search = find_mention('@', content) 
-            if len(bird_search) > 0:
+            if bird_search != None:
                 for i in bird_search:
                     id_mention = find_bird(conn, i)
                     id_post = find_post(conn, id_user, title)
-                    post_mention_bird(conn, id_post, id_mention)
+                    if id_mention != None:
+                        post_mention_bird(conn, id_post, id_mention)
 
         except pymysql.err.IntegrityError as e:
             raise ValueError(f'Unable to create post')
@@ -221,8 +226,11 @@ def find_view_user(conn, id_user):
     with conn.cursor() as cursor:
         cursor.execute('SELECT id_post FROM views WHERE id_user = %s', (id_user))
         res = cursor.fetchall()
-        posts = tuple(x[0] for x in res)
-        return posts
+        if res:
+            posts = tuple(x[0] for x in res)
+            return posts
+        else:
+            return None
 
 def find_info_view(conn, id_user, id_post):  
     with conn.cursor() as cursor:
@@ -233,10 +241,10 @@ def find_info_view(conn, id_user, id_post):
 
 def find_users_viewed_post(conn, id_post):
     with conn.cursor() as cursor:
-        cursor.execute('''SELECT user_name 
-                          FROM users 
+        cursor.execute('''SELECT id_user
+                          FROM users
                           INNER JOIN views USING (id_user) 
-                          WHERE views.id_post = %s AND user.is_activeu = 1''', (id_post))
+                          WHERE views.id_post = %s AND users.is_activeu = 1''', (id_post))
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users

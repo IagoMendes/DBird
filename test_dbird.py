@@ -148,7 +148,7 @@ class TestProjeto(unittest.TestCase):
         id = find_bird(conn, bird_name)
         self.assertIsNone(id)
 
-############################################################### TESTING POST
+############################################################### TESTING POST AND MENTIONS
     def test_post(self):
         conn = self.__class__.connection
 
@@ -200,8 +200,48 @@ class TestProjeto(unittest.TestCase):
         res = find_mentioned_posts_bird(conn, id_ment)
         self.assertCountEqual(res, (post,))
 
+    def full_mention_test(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'eu', 'eu@eu.email', 'la')
+        id_write = find_user(conn, 'eu')
+
+        user_create(conn, 'jorg', 'jorg@email', 'here')
+        id_ment_user = find_user(conn, 'jorg')
+
+        bird_create(conn, 'Cacatua')
+        id_ment_bird = find_bird(conn, 'Cacatua')
+
+        post_create(conn, id_write, 'New Post', 'Look at that pretty #Cacatua @jorg')
+        post = find_post(conn, id_write, 'New Post')
+
+        res = find_mentioned_posts_bird(conn, id_ment_bird)
+        self.assertCountEqual(res, (post,))
+
+        res = find_mentioned_posts_user(conn, id_ment_user)
+        self.assertCountEqual(res, (post,))
 
 ############################################################### TESTING VIEW
+    def test_view_create(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'eu', 'eu@eu.email', 'la')
+        id_user = find_user(conn, 'eu')
+
+        post_create(conn, id_user, 'New Post', 'Look at that pretty')
+        post = find_post(conn, id_user, 'New Post')
+
+        view_create(conn, id_user, post, 'Chrome', '192.168.0.1', 'iPhone', "2015-4-13 15:43:11")
+        data = find_info_view(conn, id_user, post)
+        self.assertEqual('Chrome', data[0])
+        self.assertEqual('192.168.0.1', data[1])
+        self.assertEqual('iPhone', data[2])
+
+        res = find_view_user(conn, id_user)
+        self.assertCountEqual(res, (post,))
+
+        res = find_users_viewed_post(conn, post)
+        self.assertCountEqual(res, (id_user,))
 
 
 ############################################################### TESTING LIKE
@@ -224,10 +264,6 @@ class TestProjeto(unittest.TestCase):
         user_dislikes_bird(conn, id_user, id_bird)
         active = find_like(conn, id_user, id_bird)
         self.assertEqual(active, 0)
-
-############################################################### TESTING MENTION
-
-
 
 def run_sql_script(filename):
     global config
