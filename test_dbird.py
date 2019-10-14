@@ -265,6 +265,41 @@ class TestProjeto(unittest.TestCase):
         active = find_like(conn, id_user, id_bird)
         self.assertEqual(active, 0)
 
+############################################################### TESTING ALL
+
+    def test_all():
+        conn = self.__class__.connection
+        user_create(conn, 'vc', 'vc@vc.email', 'al')
+        user_create(conn, 'ele', 'el@el.email', 'lal')
+
+        bird_create(conn, 'arara')
+        bird_create(conn, 'papagaio')
+
+        post_create(conn, find_user(conn, 'vc'), 'Posterino', '@eu, vc por aqui')
+        post_create(conn, find_user(conn, 'ele'), 'Posteroni', '#arara @vc')
+
+        post = find_post(conn, find_user(conn, 'vc'), 'Posteroni')
+
+        res1 = find_mentioned_posts_user(conn, find_user(conn, 'ele'))
+        self.assertCountEqual(res1, (post,))
+
+        res2 = find_mentioned_posts_bird(conn, find_bird(conn, 'arara'))
+        self.assertCountEqual(res2, (post,))
+
+        delete_user(conn, find_user(conn, 'vc'))
+        delete_user(conn, find_user(conn, 'ele'))
+
+        res3 = user_list(conn)
+        self.assertFalse(res3)
+
+        res4 = find_mentioned_posts_user(conn, find_user(conn, 'ele'))
+        self.assertFalse(res4)
+
+        delete_bird(conn, find_bird(conn, 'arara'))
+
+        res5 = find_mentioned_posts_bird(conn, find_bird(conn, 'arara'))
+        self.assertFalse(res5)
+
 def run_sql_script(filename):
     global config
     with open(filename, 'rb') as f:
