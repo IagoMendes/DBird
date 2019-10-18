@@ -9,3 +9,5 @@ CREATE TABLE like_post
     FOREIGN KEY (id_user) REFERENCES users (id_user),
     FOREIGN KEY (id_post) REFERENCES post  (id_post)
 );
+
+ALTER TABLE post ADD post_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
