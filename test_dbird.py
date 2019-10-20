@@ -7,6 +7,7 @@ import re
 import subprocess
 import unittest
 import pymysql
+import time
 
 from dbird import *
 
@@ -158,9 +159,9 @@ class TestProjeto(unittest.TestCase):
         post_create(conn, id_write, 'New Post', 'Look at that pretty bird')
         post = find_post(conn, id_write, 'New Post')
         data = user_post_list(conn, id_write)
-        self.assertEqual('New Post', data[0])
-        self.assertEqual('Look at that pretty bird', data[1])
-        self.assertEqual(None, data[2])
+        self.assertEqual('New Post', data[0][0])
+        self.assertEqual('Look at that pretty bird', data[0][1])
+        self.assertEqual(None, data[0][2])
 
         delete_post(conn, post)
         post = find_post(conn, id_write, 'New Post')
@@ -265,6 +266,69 @@ class TestProjeto(unittest.TestCase):
         active = find_like(conn, id_user, id_bird)
         self.assertEqual(active, 0)
 
+############################################################### TESTING FASE 2
+
+    def test_order(self):
+        conn = self.__class__.connection
+        user_create(conn, 'Jorg', 'email@jorg', 'landiafin')
+        id_user = find_user(conn, 'Jorg')
+
+        post_create(conn, id_user, 'New Post', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post2', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post3', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post4', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post5', 'Look at that pretty')
+
+        posts = order_post(conn, id_user)
+        
+        self.assertEqual(posts[0][0], 'New Post5')
+        self.assertEqual(posts[1][0], 'New Post4')
+        self.assertEqual(posts[2][0], 'New Post3')
+        self.assertEqual(posts[3][0], 'New Post2')
+        self.assertEqual(posts[4][0], 'New Post')
+
+
+
+############################################################### TESTING ALL
+
+    @unittest.skip('Em desenvolvimento.')
+    def test_all(self):
+        conn = self.__class__.connection
+        user_create(conn, 'vc', 'vc@vc.email', 'al')
+        user_create(conn, 'ele', 'el@el.email', 'lal')
+
+        bird_create(conn, 'arara')
+        bird_create(conn, 'papagaio')
+
+        post_create(conn, find_user(conn, 'vc'), 'Posterino', '@eu, vc por aqui')
+        post_create(conn, find_user(conn, 'ele'), 'Posteroni', '#arara @vc')
+
+        post = find_post(conn, find_user(conn, 'vc'), 'Posteroni')
+
+        res1 = find_mentioned_posts_user(conn, find_user(conn, 'ele'))
+        self.assertCountEqual(res1, (post,))
+
+        res2 = find_mentioned_posts_bird(conn, find_bird(conn, 'arara'))
+        self.assertCountEqual(res2, (post,))
+
+        delete_user(conn, find_user(conn, 'vc'))
+        delete_user(conn, find_user(conn, 'ele'))
+
+        res3 = user_list(conn)
+        self.assertFalse(res3)
+
+        res4 = find_mentioned_posts_user(conn, find_user(conn, 'ele'))
+        self.assertFalse(res4)
+
+        delete_bird(conn, find_bird(conn, 'arara'))
+
+        res5 = find_mentioned_posts_bird(conn, find_bird(conn, 'arara'))
+        self.assertFalse(res5)
+
 def run_sql_script(filename):
     global config
     with open(filename, 'rb') as f:
@@ -280,7 +344,7 @@ def run_sql_script(filename):
 
 def setUpModule():
     filenames = [entry for entry in os.listdir() 
-        if os.path.isfile(entry) and re.match(r'script.sql', entry)]
+        if os.path.isfile(entry) and re.match(r'.*_\d{3}\.sql', entry)]
     for filename in filenames:
         run_sql_script(filename)
 
