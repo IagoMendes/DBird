@@ -7,6 +7,7 @@ import re
 import subprocess
 import unittest
 import pymysql
+import time
 
 from dbird import *
 
@@ -53,6 +54,7 @@ class TestProjeto(unittest.TestCase):
         id = find_user(conn, 'jorg')
         self.assertIsNone(id)
 
+    #@unittest.skip('Arrumar')
     def test_delete_user(self):
         conn = self.__class__.connection
         user_create(conn, 'Liu', "jojo@email.com", "Cidade")
@@ -158,9 +160,9 @@ class TestProjeto(unittest.TestCase):
         post_create(conn, id_write, 'New Post', 'Look at that pretty bird')
         post = find_post(conn, id_write, 'New Post')
         data = user_post_list(conn, id_write)
-        self.assertEqual('New Post', data[0])
-        self.assertEqual('Look at that pretty bird', data[1])
-        self.assertEqual(None, data[2])
+        self.assertEqual('New Post', data[0][0])
+        self.assertEqual('Look at that pretty bird', data[0][1])
+        self.assertEqual(None, data[0][2])
 
         delete_post(conn, post)
         post = find_post(conn, id_write, 'New Post')
@@ -200,7 +202,7 @@ class TestProjeto(unittest.TestCase):
         res = find_mentioned_posts_bird(conn, id_ment)
         self.assertCountEqual(res, (post,))
 
-    def full_mention_test(self):
+    def test_full_mention(self):
         conn = self.__class__.connection
 
         user_create(conn, 'eu', 'eu@eu.email', 'la')
@@ -251,7 +253,7 @@ class TestProjeto(unittest.TestCase):
         bird_name = 'Cacatua'
         bird_create(conn, bird_name)
 
-        user_create(conn, 'Jorg', 'email@jorg', 'landiafin')
+        user_create(conn, 'Jorg', 'email@jorg', 'Tokyo')
 
         id_bird = find_bird(conn, bird_name)
         id_user = find_user(conn, 'Jorg')
@@ -264,6 +266,48 @@ class TestProjeto(unittest.TestCase):
         user_dislikes_bird(conn, id_user, id_bird)
         active = find_like(conn, id_user, id_bird)
         self.assertEqual(active, 0)
+
+############################################################### TESTING FASE 2
+
+    def test_order(self):
+        conn = self.__class__.connection
+        user_create(conn, 'Jorg', 'email@jorg', 'Tokyo')
+        id_user = find_user(conn, 'Jorg')
+
+        post_create(conn, id_user, 'New Post', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post2', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post3', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post4', 'Look at that pretty')
+        time.sleep(2)
+        post_create(conn, id_user, 'New Post5', 'Look at that pretty')
+
+        posts = order_post(conn, id_user)
+        
+        self.assertEqual(posts[0][0], 'New Post5')
+        self.assertEqual(posts[1][0], 'New Post4')
+        self.assertEqual(posts[2][0], 'New Post3')
+        self.assertEqual(posts[3][0], 'New Post2')
+        self.assertEqual(posts[4][0], 'New Post')
+
+    def test_who_mentioned(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'Jorg', 'email@jorg', 'Tokyo')
+        id_user1 = find_user(conn, 'Jorg')
+
+        user_create(conn, 'Iago', 'email@iago', 'Tokyo')
+        id_user2 = find_user(conn, 'Iago')
+        
+        post_create(conn, id_user1, 'My new post', 'Just testing @Iago')
+        post = find_post(conn, id_user1, 'My new post')
+
+        ment = who_mentioned(conn, id_user2)
+        
+        self.assertEqual(ment[0], post)
+
 
 def run_sql_script(filename):
     global config
@@ -280,7 +324,7 @@ def run_sql_script(filename):
 
 def setUpModule():
     filenames = [entry for entry in os.listdir() 
-        if os.path.isfile(entry) and re.match(r'script.sql', entry)]
+        if os.path.isfile(entry) and re.match(r'.*_\d{3}\.sql', entry)]
     for filename in filenames:
         run_sql_script(filename)
 

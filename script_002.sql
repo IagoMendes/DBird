@@ -3,15 +3,13 @@ USE dbird;
 DROP TRIGGER IF EXISTS trig_delete_user;
 delimiter //
 CREATE TRIGGER trig_delete_user
-	AFTER UPDATE ON users
+	BEFORE UPDATE ON dbird.users
 	FOR EACH ROW
 	BEGIN
 		IF NEW.is_activeu = 0 THEN
-			UPDATE post 
-            INNER JOIN user_bird USING(id_user) 
-            SET is_activep = 0,
-            is_activebm = 0
-			WHERE post.id_user = users.id_user;
+			UPDATE dbird.post 
+            SET is_activep = 0
+			WHERE post.id_user = NEW.id_user;
 		END IF;
 	END//
 delimiter ;

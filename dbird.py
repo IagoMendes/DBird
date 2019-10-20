@@ -139,7 +139,7 @@ def post_create(conn, id_user, title, content=None, url=None):  #create new post
         try:
             cursor.execute('INSERT INTO post (title, content, url, id_user) VALUES (%s,%s,%s,%s)', (title, content, url, id_user))
 
-            user_search = find_mention('#', content) 
+            user_search = find_mention('@', content) 
             if user_search != None:
                 for i in user_search:
                     id_mention = find_user(conn, i)
@@ -147,7 +147,7 @@ def post_create(conn, id_user, title, content=None, url=None):  #create new post
                     if id_mention != None:
                         post_mention_user(conn, id_post, id_mention)
         
-            bird_search = find_mention('@', content) 
+            bird_search = find_mention('#', content) 
             if bird_search != None:
                 for i in bird_search:
                     id_mention = find_bird(conn, i)
@@ -207,7 +207,7 @@ def user_post_list(conn, id_user):  #list all posts a specific user wrote
         cursor.execute('SELECT title, content, url FROM post WHERE id_user = %s AND is_activep = 1', (id_user))
         res = cursor.fetchall()
         posts = tuple(x for x in res)
-        return posts[0]
+        return posts
 
 def delete_post(conn, id):  #logical delete for post
     with conn.cursor() as cursor:
@@ -248,3 +248,22 @@ def find_users_viewed_post(conn, id_post):
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users
+
+##################################################### FASE 2
+
+def order_post(conn, id_user):  #list all posts in order
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT title, content, url, post_date FROM post WHERE id_user = %s AND is_activep = 1 ORDER BY post_date DESC', (id_user))
+        res = cursor.fetchall()
+        posts = tuple(x for x in res)
+        return posts
+
+def who_mentioned(conn, id_user):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT id_post FROM user_mention INNER JOIN post USING (id_post) WHERE user_mention.id_user = %s AND is_activep = 1', (id_user))
+        res = cursor.fetchall()
+        posts = tuple(x[0] for x in res)
+        if len(posts) > 0:
+            return posts
+        else:
+            return posts
