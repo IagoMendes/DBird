@@ -207,7 +207,7 @@ def user_post_list(conn, id_user):  #list all posts a specific user wrote
         cursor.execute('SELECT title, content, url FROM post WHERE id_user = %s AND is_activep = 1', (id_user))
         res = cursor.fetchall()
         posts = tuple(x for x in res)
-        return posts[0]
+        return posts
 
 def delete_post(conn, id):  #logical delete for post
     with conn.cursor() as cursor:
@@ -257,3 +257,4 @@ def order_post(conn, id_user):  #list all posts in order
         res = cursor.fetchall()
         posts = tuple(x for x in res)
         return posts
+
