@@ -267,6 +267,9 @@ class TestProjeto(unittest.TestCase):
         active = find_like(conn, id_user, id_bird)
         self.assertEqual(active, 0)
 
+        active = find_like(conn, id_user, id_bird+4)
+        self.assertEqual(active, None)
+
 ############################################################### TESTING FASE 2
 
     def test_order(self):
@@ -301,13 +304,43 @@ class TestProjeto(unittest.TestCase):
         user_create(conn, 'Iago', 'email@iago', 'Tokyo')
         id_user2 = find_user(conn, 'Iago')
         
+        user_create(conn, 'Jao', 'email@jao', 'Tokyo')
+        id_user3 = find_user(conn, 'Jao')
+
         post_create(conn, id_user1, 'My new post', 'Just testing @Iago')
-        post = find_post(conn, id_user1, 'My new post')
+        post_create(conn, id_user3, 'My new post', 'Just testing again @Iago')
 
         ment = who_mentioned(conn, id_user2)
         
         self.assertEqual(ment[0], id_user1)
+        self.assertEqual(ment[1], id_user3)
 
+    def test_like_dislike(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'Jorg', 'email@jorg', 'Tokyo')
+        id_user1 = find_user(conn, 'Jorg')
+
+        user_create(conn, 'Iago', 'email@iago', 'Tokyo')
+        id_user2 = find_user(conn, 'Iago')
+
+        post_create(conn, id_user1, 'My new post', 'Just testing @Iago')
+        post = find_post(conn, id_user1, "My new post")
+
+        self.assertIsNone(check_like(conn, id_user2, post))
+
+        like_post(conn, id_user2, post)
+
+        check = check_like(conn, id_user2, post)
+        self.assertEqual(check, 1)
+
+        dislike_post(conn, id_user2, post)
+        check = check_like(conn, id_user2, post)
+        self.assertEqual(check, 0)
+
+        cancel_like(conn, id_user2, post)
+        check = check_like(conn, id_user2, post)
+        self.assertIsNone(check)
 
 def run_sql_script(filename):
     global config

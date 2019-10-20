@@ -96,7 +96,7 @@ def delete_bird(conn, id):  #logical delete for birds (which may be unnecessary)
         cursor.execute('DELETE FROM bird WHERE id_bird=%s', (id))
 
 ##################################################### LIKES
-def user_likes_bird(conn, id_user, id_bird):  #insert new bird
+def user_likes_bird(conn, id_user, id_bird): 
     with conn.cursor() as cursor:
         try:
             cursor.execute('INSERT INTO user_bird (id_user, id_bird) VALUES (%s,%s)', (id_user, id_bird))
@@ -115,6 +115,47 @@ def find_like(conn, id_user, id_bird):  #find bird id using it's name
 def user_dislikes_bird(conn, id_user, id_bird):
     with conn.cursor() as cursor:
         cursor.execute('UPDATE user_bird SET is_activeub = 0 WHERE id_user=%s AND id_bird=%s', (id_user, id_bird))
+
+def check_like(conn, id_user, id_post):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT like_value FROM like_post WHERE id_post = %s AND id_user = %s', (id_post, id_user))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+def like_post(conn, id_user, id_post): 
+    with conn.cursor() as cursor:
+        try:
+            check = check_like(conn, id_user, id_post)
+            if check == None:
+                cursor.execute('INSERT INTO like_post (id_user, id_post, like_value) VALUES (%s,%s,%s)', (id_user, id_post, 1))
+            elif check == 0:
+                cursor.execute('UPDATE like_post SET like_value = 1 WHERE id_post = %s AND id_user = %s', (id_post, id_user))
+            else:
+                pass
+
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(f'User {id_user} is unable to like post {id_post}')
+
+def dislike_post(conn, id_user, id_post): 
+    with conn.cursor() as cursor:
+        try:
+            check = check_like(conn, id_user, id_post)
+            if check == None:
+                cursor.execute('INSERT INTO like_post (id_user, id_post, like_value) VALUES (%s,%s,%s)', (id_user, id_post, 0))
+            elif check == 1:
+                cursor.execute('UPDATE like_post SET like_value = 0 WHERE id_post = %s AND id_user = %s', (id_post, id_user))
+            else:
+                pass
+
+        except pymysql.err.IntegrityError as e:
+            raise ValueError(f'User {id_user} is unable to like post {id_post}')
+
+def cancel_like(conn, id_user, id_post):
+    with conn.cursor() as cursor:
+        cursor.execute('DELETE FROM like_post WHERE id_post=%s AND id_user=%s', (id_post, id_user))
 
 ##################################################### CRUD POST
 def find_mention(subs, s):
