@@ -260,7 +260,7 @@ def order_post(conn, id_user):  #list all posts in order
 
 def who_mentioned(conn, id_user):
     with conn.cursor() as cursor:
-        cursor.execute('SELECT id_post FROM user_mention INNER JOIN post USING (id_post) WHERE user_mention.id_user = %s AND is_activep = 1', (id_user))
+        cursor.execute('SELECT post.id_user FROM user_mention INNER JOIN post USING (id_post) WHERE user_mention.id_user = %s AND is_activep = 1', (id_user))
         res = cursor.fetchall()
         posts = tuple(x[0] for x in res)
         if len(posts) > 0:

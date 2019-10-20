@@ -306,7 +306,7 @@ class TestProjeto(unittest.TestCase):
 
         ment = who_mentioned(conn, id_user2)
         
-        self.assertEqual(ment[0], post)
+        self.assertEqual(ment[0], id_user1)
 
 
 def run_sql_script(filename):
