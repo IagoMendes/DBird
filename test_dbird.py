@@ -7,6 +7,7 @@ import re
 import subprocess
 import unittest
 import pymysql
+import time
 
 from dbird import *
 
@@ -265,9 +266,37 @@ class TestProjeto(unittest.TestCase):
         active = find_like(conn, id_user, id_bird)
         self.assertEqual(active, 0)
 
+############################################################### TESTING FASE 2
+
+    def test_order(self):
+        conn = self.__class__.connection
+        user_create(conn, 'Jorg', 'email@jorg', 'landiafin')
+        id_user = find_user(conn, 'Jorg')
+
+        post_create(conn, id_user, 'New Post', 'Look at that pretty')
+        time.sleep(5)
+        post_create(conn, id_user, 'New Post2', 'Look at that pretty')
+        time.sleep(5)
+        post_create(conn, id_user, 'New Post3', 'Look at that pretty')
+        time.sleep(5)
+        post_create(conn, id_user, 'New Post4', 'Look at that pretty')
+        time.sleep(5)
+        post_create(conn, id_user, 'New Post5', 'Look at that pretty')
+
+        posts = order_post(conn, id_user)
+        
+        self.assertEqual(posts[0][0], 'New Post5')
+        self.assertEqual(posts[1][0], 'New Post4')
+        self.assertEqual(posts[2][0], 'New Post3')
+        self.assertEqual(posts[3][0], 'New Post2')
+        self.assertEqual(posts[4][0], 'New Post')
+
+
+
 ############################################################### TESTING ALL
 
-    def test_all():
+    @unittest.skip('Em desenvolvimento.')
+    def test_all(self):
         conn = self.__class__.connection
         user_create(conn, 'vc', 'vc@vc.email', 'al')
         user_create(conn, 'ele', 'el@el.email', 'lal')
@@ -315,7 +344,7 @@ def run_sql_script(filename):
 
 def setUpModule():
     filenames = [entry for entry in os.listdir() 
-        if os.path.isfile(entry) and re.match(r'script.sql', entry)]
+        if os.path.isfile(entry) and re.match(r'.*_\d{3}\.sql', entry)]
     for filename in filenames:
         run_sql_script(filename)
 

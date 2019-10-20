@@ -248,3 +248,12 @@ def find_users_viewed_post(conn, id_post):
         res = cursor.fetchall()
         users = tuple(x[0] for x in res)
         return users
+
+##################################################### FASE 2
+
+def order_post(conn, id_user):  #list all posts in order
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT title, content, url, post_date FROM post WHERE id_user = %s AND is_activep = 1 ORDER BY post_date DESC', (id_user))
+        res = cursor.fetchall()
+        posts = tuple(x for x in res)
+        return posts
