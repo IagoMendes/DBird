@@ -1,8 +1,12 @@
-from fastapi import FastAPI
 from functools import partial
-from pydantic import BaseModel
+import io
+import json
+from fastapi import FastAPI
+import os
+import os.path
+import subprocess
 import pymysql
-import re
+from pydantic import BaseModel
 from dbird import *
 
 app = FastAPI()
@@ -61,6 +65,7 @@ def update_user(user_name: str, new_user_name: str, new_user_email: str, new_use
             update_user_name(conn, user_id, new_user_name)
             update_user_email(conn, user_id, new_user_email)
             update_user_city(conn, user_id, new_user_city)
+            conn.commit()
             return "User updated"
         else:
             return "No such user"
@@ -106,6 +111,7 @@ def bird_update(bird_name: str, new_bird_name: str):
         bird_id = find_bird(conn, bird_name)
         if bird_id:
             update_bird(conn, bird_id, new_bird_name)
+            conn.commit()
             return "Bird name updated"
         else:
             return "No such bird"
