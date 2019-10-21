@@ -414,7 +414,7 @@ class TestProjeto(unittest.TestCase):
         view_create(conn, id_user4, post, 'Chrome', '192.168.0.1', 'Mi20', "2015-4-13 15:43:11")
         view_create(conn, id_user5, post, 'Safari', '192.168.0.1', 'iPhone Y', "2015-4-13 15:43:11")
 
-        print(list_devices(conn)) #Returns device name, browser name and how many users use that device
+        #print(list_devices(conn)) #Returns device name, browser name and how many users use that device
         
 
 def run_sql_script(filename):
