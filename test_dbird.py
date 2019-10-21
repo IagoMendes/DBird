@@ -348,6 +348,44 @@ class TestProjeto(unittest.TestCase):
         check = check_like(conn, id_user2, post)
         self.assertIsNone(check)
 
+    def test_popular(self):
+        conn = self.__class__.connection
+
+        user_create(conn, 'Jorg', 'email@jorg', 'Tokyo')
+        id_user1 = find_user(conn, 'Jorg')
+        user_create(conn, 'Iago', 'email@iago', 'Tokyo')
+        id_user2 = find_user(conn, 'Iago')
+        user_create(conn, 'Jao', 'email@jao', 'Tokyo')
+        id_user3 = find_user(conn, 'Jao')
+        user_create(conn, 'Liu', 'email@liu', 'Tokyo')
+        id_user4 = find_user(conn, 'Liu')
+        user_create(conn, 'Mister', 'email@mr', 'Los Angeles')
+        id_user5 = find_user(conn, 'Mister')
+
+        post_create(conn, id_user1, 'My new post', 'Just testing @Iago')
+        post = find_post(conn, id_user1, "My new post")
+        like_post(conn, id_user1, post)
+        like_post(conn, id_user2, post)
+
+        post_create(conn, id_user2, 'My post', 'Just testing @Iago')
+        post2 = find_post(conn, id_user2, "My post")
+        like_post(conn, id_user1, post2)
+        like_post(conn, id_user2, post2)
+        like_post(conn, id_user3, post2)
+        like_post(conn, id_user4, post2)
+
+        post_create(conn, id_user5, 'Nisbe', 'Just testing @Iago')
+        post5 = find_post(conn, id_user5, 'Nisbe')
+        like_post(conn, id_user2, post2)
+        like_post(conn, id_user3, post5)
+        like_post(conn, id_user4, post5)
+        
+        famous = popular(conn)
+        self.assertEqual('Jorg', famous[0][1])
+        self.assertEqual('Mister', famous[1][1])
+
+
+
 def run_sql_script(filename):
     global config
     with open(filename, 'rb') as f:

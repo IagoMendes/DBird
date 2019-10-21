@@ -326,3 +326,9 @@ def who_mentioned(conn, id_user):
             return posts
         else:
             return posts
+
+def popular(conn):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT id, uname, city FROM popular')
+        res = cursor.fetchall()
+        return res
