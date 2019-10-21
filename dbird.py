@@ -84,13 +84,6 @@ def find_bird(conn, bird_name):  #find bird id using it's name
         else:
             return None
 
-def bird_list(conn):  #list all birds 
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT bird_name FROM bird')
-        res = cursor.fetchall()
-        birds = tuple(x[0] for x in res)
-        return birds
-
 def update_bird(conn, id, new_bird_name):  #update bird name (only when mistakes were made)
     with conn.cursor() as cursor:
         try:
@@ -163,24 +156,6 @@ def dislike_post(conn, id_user, id_post):
 def cancel_like(conn, id_user, id_post):
     with conn.cursor() as cursor:
         cursor.execute('DELETE FROM like_post WHERE id_post=%s AND id_user=%s', (id_post, id_user))
-
-def like_count(conn, id_post):
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT COUNT(like_value) FROM like_post WHERE id_post=%s AND like_value=1', (id_post))
-        res = cursor.fetchone()
-        if res:
-            return res[0]
-        else:
-            return None
-
-def dislike_count(conn, id_post):
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT COUNT(like_value) FROM like_post WHERE id_post=%s AND like_value=0', (id_post))
-        res = cursor.fetchone()
-        if res:
-            return res[0]
-        else:
-            return None
 
 ##################################################### CRUD POST
 def find_mention(subs, s):
@@ -333,9 +308,3 @@ def who_mentioned(conn, id_user):
             return posts
         else:
             return posts
-
-def popular(conn):
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT id, uname, city FROM popular')
-        res = cursor.fetchall()
-        return res
