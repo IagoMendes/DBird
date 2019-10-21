@@ -362,29 +362,60 @@ class TestProjeto(unittest.TestCase):
         user_create(conn, 'Mister', 'email@mr', 'Los Angeles')
         id_user5 = find_user(conn, 'Mister')
 
-        post_create(conn, id_user1, 'My new post', 'Just testing @Iago')
+        bird_create(conn, "cacatua")
+        bird_create(conn, "pru")
+        bird_create(conn, "arara")
+        bird_create(conn, "pomba")
+
+        post_create(conn, id_user1, 'My new post', 'Just testing @Iago #pru #arara')
         post = find_post(conn, id_user1, "My new post")
         like_post(conn, id_user1, post)
         like_post(conn, id_user2, post)
 
-        post_create(conn, id_user2, 'My post', 'Just testing @Iago')
+        post_create(conn, id_user2, 'My post', 'Just testing @Iago #pomba #arara')
         post2 = find_post(conn, id_user2, "My post")
         like_post(conn, id_user1, post2)
         like_post(conn, id_user2, post2)
         like_post(conn, id_user3, post2)
         like_post(conn, id_user4, post2)
 
-        post_create(conn, id_user5, 'Nisbe', 'Just testing @Iago')
+        post_create(conn, id_user5, 'Nisbe', 'Just testing @Iago #pru #cacatua')
         post5 = find_post(conn, id_user5, 'Nisbe')
         like_post(conn, id_user2, post2)
         like_post(conn, id_user3, post5)
         like_post(conn, id_user4, post5)
+
+        #print(bird_urls(conn)) #Returns bird name, post and url for it's picture 
         
         famous = popular(conn)
         self.assertEqual('Jorg', famous[0][1])
         self.assertEqual('Mister', famous[1][1])
 
+    def test_device_list(self):
+        conn = self.__class__.connection
 
+        user_create(conn, 'Jorg', 'email@jorg', 'Tokyo')
+        id_user1 = find_user(conn, 'Jorg')
+        user_create(conn, 'Iago', 'email@iago', 'Tokyo')
+        id_user2 = find_user(conn, 'Iago')
+        user_create(conn, 'Jao', 'email@jao', 'Tokyo')
+        id_user3 = find_user(conn, 'Jao')
+        user_create(conn, 'Liu', 'email@liu', 'Tokyo')
+        id_user4 = find_user(conn, 'Liu')
+        user_create(conn, 'Mister', 'email@mr', 'Los Angeles')
+        id_user5 = find_user(conn, 'Mister')
+
+        post_create(conn, id_user1, 'New Post', 'Look at that pretty')
+        post = find_post(conn, id_user1, 'New Post')
+
+        view_create(conn, id_user1, post, 'Chrome', '192.168.0.1', 'iPhone Y', "2015-4-13 15:43:11")
+        view_create(conn, id_user2, post, 'Chrome', '192.168.0.1', 'S13', "2015-4-13 15:43:11")
+        view_create(conn, id_user3, post, 'Explorer', '192.168.0.1', 'S13', "2015-4-13 15:43:11")
+        view_create(conn, id_user4, post, 'Chrome', '192.168.0.1', 'Mi20', "2015-4-13 15:43:11")
+        view_create(conn, id_user5, post, 'Safari', '192.168.0.1', 'iPhone Y', "2015-4-13 15:43:11")
+
+        print(list_devices(conn)) #Returns device name, browser name and how many users use that device
+        
 
 def run_sql_script(filename):
     global config

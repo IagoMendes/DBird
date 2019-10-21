@@ -157,6 +157,24 @@ def cancel_like(conn, id_user, id_post):
     with conn.cursor() as cursor:
         cursor.execute('DELETE FROM like_post WHERE id_post=%s AND id_user=%s', (id_post, id_user))
 
+def like_count(conn, id_post):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT COUNT(like_value) FROM like_post WHERE id_post=%s AND like_value=1', (id_post))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+def dislike_count(conn, id_post):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT COUNT(like_value) FROM like_post WHERE id_post=%s AND like_value=0', (id_post))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
 ##################################################### CRUD POST
 def find_mention(subs, s):
     check_end = 1
@@ -308,3 +326,27 @@ def who_mentioned(conn, id_user):
             return posts
         else:
             return posts
+
+def popular(conn):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT id, uname, city FROM popular')
+        res = cursor.fetchall()
+        return res
+
+def list_devices(conn):
+    with conn.cursor() as cursor:
+        cursor.execute('''SELECT device, COUNT(device) as cnt, browser, COUNT(browser) as cntb
+                            FROM
+                                views 
+                            GROUP BY device
+                            ORDER BY cnt DESC''')
+        res = cursor.fetchall()
+        return res
+
+def bird_urls(conn):
+    with conn.cursor() as cursor:
+        cursor.execute('''SELECT bird.bird_name, post.id_post, post.url 
+                          FROM bird INNER JOIN bird_mention USING (id_bird) INNER JOIN post USING (id_post) 
+                          WHERE post.is_activep=1''')
+        res = cursor.fetchall()
+        return res

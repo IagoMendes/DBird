@@ -11,4 +11,4 @@ CREATE VIEW popular AS
         u.is_activeu = 1 AND
         p.is_activep = 1
     GROUP BY u.city
-    ORDER BY likes DESC
+    ORDER BY likes DESC;
