@@ -330,13 +330,19 @@ class TestProjeto(unittest.TestCase):
         self.assertIsNone(check_like(conn, id_user2, post))
 
         like_post(conn, id_user2, post)
-
+        like_post(conn, id_user1, post)
         check = check_like(conn, id_user2, post)
         self.assertEqual(check, 1)
+
+        qnt = like_count(conn, post)
+        self.assertEqual(qnt, 2)
 
         dislike_post(conn, id_user2, post)
         check = check_like(conn, id_user2, post)
         self.assertEqual(check, 0)
+
+        qnt = dislike_count(conn, post)
+        self.assertEqual(qnt, 1)
 
         cancel_like(conn, id_user2, post)
         check = check_like(conn, id_user2, post)

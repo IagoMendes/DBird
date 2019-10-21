@@ -157,6 +157,24 @@ def cancel_like(conn, id_user, id_post):
     with conn.cursor() as cursor:
         cursor.execute('DELETE FROM like_post WHERE id_post=%s AND id_user=%s', (id_post, id_user))
 
+def like_count(conn, id_post):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT COUNT(like_value) FROM like_post WHERE id_post=%s AND like_value=1', (id_post))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
+def dislike_count(conn, id_post):
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT COUNT(like_value) FROM like_post WHERE id_post=%s AND like_value=0', (id_post))
+        res = cursor.fetchone()
+        if res:
+            return res[0]
+        else:
+            return None
+
 ##################################################### CRUD POST
 def find_mention(subs, s):
     check_end = 1
